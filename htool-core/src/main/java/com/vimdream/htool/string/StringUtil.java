@@ -1,5 +1,10 @@
 package com.vimdream.htool.string;
 
+import com.vimdream.htool.lang.Assert;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @Title: StringUtil
  * @Author vimdream
@@ -58,5 +63,52 @@ public class StringUtil {
 
     public static String format(String template, Object... args) {
         return String.format(template, args);
+    }
+
+    public static List<String> split(String str, char separator, char banPrefix, char banSuffix) {
+        Assert.notBlank(str, "字符串不能为空");
+        Assert.isFalse(separator == banPrefix, "%c(separator) == %c(banPrefix) 不能相同", separator, banPrefix);
+        Assert.isFalse(separator == banSuffix, "%c(separator) == %c(banSuffix) 不能相同", separator, banSuffix);
+        Assert.isFalse(banPrefix == banSuffix, "%c(banPrefix) == %c(banSuffix) 不能相同", banPrefix, banSuffix);
+
+        int stack = 0;
+
+        List<String> res = new ArrayList<>();
+        StringBuilder temp = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            // 越过禁止区
+            if (c == banPrefix) {
+                temp.append(c);
+                stack++;
+                while (stack != 0) {
+                    c = str.charAt(++i);
+                    temp.append(c);
+                    if (c == banPrefix) {
+                        stack++;
+                        continue;
+                    }
+                    if (c == banSuffix){ stack--; }
+                }
+                res.add(temp.toString());
+                temp = new StringBuilder();
+                c = str.charAt(++i);
+            }
+
+            if (c != separator) {
+                temp.append(c);
+            } else {
+                if (temp.length() > 0) {
+                    res.add(temp.toString());
+                    temp = new StringBuilder();
+                }
+            }
+
+        }
+        if (temp.length() > 0) {
+            res.add(temp.toString());
+            temp = new StringBuilder();
+        }
+        return res;
     }
 }
