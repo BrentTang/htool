@@ -61,11 +61,6 @@
         </dependency>
         <dependency>
             <groupId>com.vimdream.common</groupId>
-            <artifactId>htool-io</artifactId>
-            <version>${htool-io.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vimdream.common</groupId>
             <artifactId>htool-core</artifactId>
             <version>${htool-core.version}</version>
         </dependency>

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.vimdream.htool.object.ObjectUtil;
 import com.vimdream.htool.string.StringUtil;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -27,6 +28,7 @@ public class JSON {
     public static final int JSON_ARRAY = 3;
 
     public static final String ARRAY_PREFIX = "[";
+    public static final String ARRAY_PREFIX_SPLIT_REGEX = "\\[";
     public static final String ARRAY_SUFFIX = "]";
     public static final char PATH_SEPARATOR = '.';
     public static final String PATH_SPLIT_REGEX = "\\.";
@@ -68,6 +70,8 @@ public class JSON {
 
     /**
      * 通过path访问val
+     *  l2.l2_1[0].[3].[0]
+     *  l2.l2_1[0].result[0]
      * @param path
      * @return
      */
@@ -272,14 +276,14 @@ public class JSON {
     private String[] correctNodes(String[] targets) {
         int left = 0;
         int right = targets.length - 1;
-        while (StringUtil.isBlank(targets[left])) {
+        while (left <= right && StringUtil.isBlank(targets[left])) {
             left++;
         }
         if (left > right) {
             return null;
         }
 
-        while (StringUtil.isBlank(targets[right])) {
+        while (right >= 0 && StringUtil.isBlank(targets[right])) {
             right--;
         }
 
@@ -287,12 +291,25 @@ public class JSON {
             return Arrays.copyOfRange(targets, left, right + 1);
         }
 
-        for (int i = left + 1; i < right; i++) {
-            if (StringUtil.isBlank(targets[left])) {
+        ArrayList<String> nodes = new ArrayList<>(right - left);
+        for (int i = left; i < right; i++) {
+            if (StringUtil.isBlank(targets[i])) {
                 return null;
             }
+            String node = targets[i];
+            String[] ele = node.split(ARRAY_PREFIX_SPLIT_REGEX);
+            if (ele.length > 1) {
+                nodes.add(ele[0] + ARRAY_PREFIX + ele[1]);
+                if (ele.length > 2) {
+                    for (int j = 2; j < ele.length; j++) {
+                        nodes.add(ARRAY_PREFIX + ele[j]);
+                    }
+                }
+            }
+            nodes.add(node);
         }
-        return Arrays.copyOfRange(targets, left, right + 1);
+//        return Arrays.copyOfRange(targets, left, right + 1);
+        return nodes.toArray(new String[nodes.size()]);
     }
 
     /**
